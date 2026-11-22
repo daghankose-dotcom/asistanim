@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Asistanım" />
+  <title>Asistanım — İş Yönetimi</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0f172a;
+      --accent-text: #ffffff;
+      --danger: #b91c1c;
+      --danger-bg: #fef2f2;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --radius: 12px;
+    }
+    body.dark {
+      --bg: #0b0f19;
+      --surface: #131a2a;
+      --surface-alt: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --accent: #f8fafc;
+      --accent-text: #0f172a;
+      --danger: #fca5a5;
+      --danger-bg: #450a0a;
+      --warn: #fcd34d;
+      --warn-bg: #451a03;
+      --ok: #86efac;
+      --ok-bg: #052e16;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.5;
+      padding-bottom: 48px;
+      transition: background 0.25s, color 0.25s;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 14px; }
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 14px 10px;
+    }
+    .header-top {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+      max-width: 960px; margin: 0 auto;
+    }
+    .brand { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+    .brand small { font-size: 15px; font-weight: 500; color: var(--text-muted); margin-left: 6px; }
+    .header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pill-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .nav {
+      display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 2px;
+      max-width: 960px; margin: 0 auto;
+      scrollbar-width: none;
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav button {
+      flex: 0 0 auto;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .nav button.active {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    h2 { font-size: 26px; margin: 10px 0 14px; font-weight: 800; }
+    h3 { font-size: 21px; margin: 0 0 10px; font-weight: 700; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .grid-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .stat-val { font-size: 28px; font-weight: 800; }
+    .stat-lbl { font-size: 15px; color: var(--text-muted); margin-top: 2px; }
+    label { display: block; font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    input, textarea, select {
+      width: 100%;
+      background: var(--surface-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 18px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+    textarea { min-height: 220px; resize: vertical; line-height: 1.6; }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-outline {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+    .btn-sm { padding: 8px 12px; font-size: 15px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .row-between { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+    .tag {
+      display: inline-block;
+      font-size: 14px; font-weight: 700;
+      padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+    }
+    .tag-warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+    .tag-danger { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    .tag-ok { background: var(--ok-bg); color: var(--ok); border-color: var(--ok); }
+    .muted { color: var(--text-muted); font-size: 15px; }
+    .hidden { display: none !important; }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 50;
+      display: flex; align-items: center; justify-content: center; padding: 14px;
+    }
+    .modal {
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 14px;
+      width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto;
+      padding: 20px;
+    }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .filter-bar button.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .ai-box {
+      background: var(--surface-alt);
+      border-left: 4px solid var(--accent);
+      padding: 14px; border-radius: 8px; margin-top: 12px;
+      white-space: pre-wrap; font-size: 17px;
+    }
+    .action-item {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 8px 0; border-top: 1px solid var(--border);
+    }
+    audio { width: 100%; margin: 10px 0; }
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div class="brand">Asistanım <small>İş Yönetimi</small></div>
+      <div class="header-actions">
+        <span id="clockBadge" class="pill-btn" style="cursor:default;">--:--</span>
+        <button id="themeBtn" class="pill-btn" onclick="openModal('themeModal')">Tema: Otomatik</button>
+        <button id="settingsBtn" class="pill-btn" onclick="openModal('settingsModal')">Ayarlar ve Bağlantılar</button>
+      </div>
+    </div>
+    <nav class="nav" id="mainNav">
+      <button data-tab="today" class="active" onclick="switchTab('today')">Bugün</button>
+      <button data-tab="tasks" onclick="switchTab('tasks')">Görevler</button>
+      <button data-tab="notes" onclick="switchTab('notes')">Notlar</button>
+      <button data-tab="mail" onclick="switchTab('mail')">İş Maili</button>
+      <button data-tab="alarms" onclick="switchTab('alarms')">Alarmlar</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- BUGÜN -->
+    <section id="tab-today">
+      <h2>Günlük Özet</h2>
+      <div class="grid-stats" id="todayStats"></div>
+
+      <div class="card">
+        <div class="row-between">
+          <h3>Akıllı Asistan Analizi</h3>
+          <button class="btn btn-sm" id="analyzeBtn" onclick="runDailyAnalysis()">Günü Analiz Et</button>
+        </div>
+        <p class="muted" style="margin-top:4px;">Görevlerini, bekleyen işlerini, doğrudan sana gelen iş maillerini ve alarmlarını değerlendirir.</p>
+        <div id="dailyAnalysisOutput" class="ai-box hidden"></div>
+      </div>
+
+      <div class="card">
+        <h3>Haftalık Değerlendirme</h3>
+        <div id="weeklySummary"></div>
+      </div>
+    </section>
+
+    <!-- GÖREVLER -->
+    <section id="tab-tasks" class="hidden">
+      <h2>İş Süreçleri ve Görevler</h2>
+      <div class="card">
+        <h3>Yeni Görev Ekle</h3>
+        <input id="taskTitle" type="text" placeholder="Görev veya süreç başlığı" />
+        <div class="row">
+          <select id="taskStatus" style="flex:1; min-width:160px;">
+            <option value="todo">Yapılacak</option>
+            <option value="doing">İşlemde</option>
+            <option value="waiting">Haber Bekliyor</option>
+            <option value="done">Tamamlandı</option>
+          </select>
+          <input id="taskOwner" type="text" placeholder="İlgili kişi / kurum (isteğe bağlı)" style="flex:1; min-width:160px;" />
+        </div>
+        <button class="btn" onclick="addTask()">Görevi Kaydet</button>
+      </div>
+
+      <div class="filter-bar" id="taskFilterBar">
+        <button class="btn btn-outline btn-sm active" onclick="setTaskFilter('all', this)">Tümü</button>
+        <button class="btn btn-outline btn-sm" onclick="setTaskFilter('todo', this)">Yapılacak</button>
+        <button class="btn btn-outline btn-sm" onclick="setTaskFilter('doing', this)">İşlemde</button>
+        <button class="btn btn-outline btn-sm" onclick="setTaskFilter('waiting', this)">Haber Bekliyor</button>
+        <button class="btn btn-outline btn-sm" onclick="setTaskFilter('done', this)">Tamamlandı</button>
+      </div>
+      <div id="taskList"></div>
+    </section>
+
+    <!-- NOTLAR -->
+    <section id="tab-notes" class="hidden">
+      <h2>Toplantı ve İş Notları</h2>
+      <div class="card">
+        <h3>Yeni Not</h3>
+        <input id="noteTitle" type="text" placeholder="Not veya toplantı başlığı" />
+        <textarea id="noteBody" placeholder="Notunu buraya yaz veya sesle yazdır. Satır başına - koyduğun maddeler tek tıkla göreve aktarılabilir."></textarea>
+        <div class="row" style="margin-bottom:12px;">
+          <button id="dictateBtn" class="btn btn-outline btn-sm" onclick="toggleDictation()">Sesle Yazdır</button>
+          <button id="recordBtn" class="btn btn-outline btn-sm" onclick="toggleAudioRecord()">Ses Kaydet</button>
+          <span id="voiceStatus" class="muted"></span>
+        </div>
+        <div id="draftAudioWrap" class="hidden">
+          <audio id="draftAudioPlayer" controls></audio>
+          <button class="btn btn-outline btn-sm" onclick="clearDraftAudio()" style="margin-bottom:10px;">Ses Kaydını Kaldır</button>
+        </div>
+        <button class="btn" onclick="saveNote()">Notu Kaydet</button>
+      </div>
+      <div id="notesList"></div>
+    </section>
+
+    <!-- İŞ MAİLİ -->
+    <section id="tab-mail" class="hidden">
+      <div class="row-between">
+        <h2>İş Maili ve Takvim</h2>
+        <button class="btn btn-sm" id="gmailConnectBtn" onclick="connectGmail()">İş Gmail Hesabını Bağla</button>
+      </div>
+      <p id="gmailStatusText" class="muted" style="margin-top:0;">Örnek iş mailleri gösteriliyor. Gerçek hesabını bağlamak için Ayarlar'dan Google Client ID gir.</p>
+
+      <div class="filter-bar" id="mailFilterBar">
+        <button class="btn btn-outline btn-sm active" data-mfilter="direct" onclick="setMailFilter('direct')">Doğrudan Bana</button>
+        <button class="btn btn-outline btn-sm" data-mfilter="cc" onclick="setMailFilter('cc')">Sadece CC</button>
+        <button class="btn btn-outline btn-sm" data-mfilter="all" onclick="setMailFilter('all')">Tümü</button>
+      </div>
+
+      <div class="card" style="padding:12px 16px;">
+        <label style="display:flex; align-items:center; gap:10px; margin:0; font-weight:600;">
+          <input type="checkbox" id="gmailDirectOnly" checked onchange="savePrefs()" style="width:20px; height:20px; margin:0;" />
+          Gmail'den yalnızca doğrudan bana gelenleri çek (to:me)
+        </label>
+      </div>
+
+      <div id="calendarSection" class="card hidden">
+        <h3>Yaklaşan Takvim Toplantıları</h3>
+        <div id="calendarList"></div>
+      </div>
+
+      <div id="mailList"></div>
+    </section>
+
+    <!-- ALARMLAR -->
+    <section id="tab-alarms" class="hidden">
+      <h2>Hatırlatıcılar ve Alarmlar</h2>
+      <div class="card">
+        <h3>Yeni Alarm Kur</h3>
+        <input id="alarmTitle" type="text" placeholder="Hatırlatma başlığı (Örn: Teklif gönder)" />
+        <div class="row">
+          <input id="alarmTime" type="time" style="flex:1; min-width:140px;" />
+          <select id="alarmRepeat" style="flex:1; min-width:160px;">
+            <option value="once">Tek Seferlik</option>
+            <option value="daily">Her Gün</option>
+            <option value="weekdays">Hafta İçi</option>
+            <option value="weekly">Haftalık</option>
+          </select>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="addAlarm()">Alarmı Kaydet</button>
+          <button class="btn btn-outline" onclick="triggerTestAlarm()">Test Alarmı Çal (3 sn)</button>
+        </div>
+      </div>
+      <div id="alarmsList"></div>
+    </section>
+  </main>
+
+  <!-- TEMA MODALI -->
+  <div id="themeModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('themeModal')">
+    <div class="modal">
+      <div class="row-between">
+        <h3>Tema ve Gece/Gündüz Saatleri</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('themeModal')">Kapat</button>
+      </div>
+      <label>Tema Modu</label>
+      <select id="themeModeSelect" onchange="saveThemeSettings()">
+        <option value="auto">Otomatik (Saate Göre)</option>
+        <option value="light">Her Zaman Gündüz</option>
+        <option value="dark">Her Zaman Gece</option>
+      </select>
+      <div class="row">
+        <div style="flex:1;">
+          <label>Gündüz Başlangıç</label>
+          <input id="dayStartInput" type="time" value="07:00" onchange="saveThemeSettings()" />
+        </div>
+        <div style="flex:1;">
+          <label>Gece Başlangıç</label>
+          <input id="nightStartInput" type="time" value="19:00" onchange="saveThemeSettings()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AYARLAR & CANLI BAĞLANTILAR MODALI -->
+  <div id="settingsModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('settingsModal')">
+    <div class="modal">
+      <div class="row-between">
+        <h3>Ayarlar ve Canlı Bağlantılar</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('settingsModal')">Kapat</button>
+      </div>
+      <p class="muted">Tüm anahtarlar yalnızca senin cihazında saklanır.</p>
+
+      <label>1. Canlı Yapay Zeka (Gemini API Anahtarı)</label>
+      <input id="geminiKeyInput" type="password" placeholder="AIza..." />
+
+      <label>2. İş Gmail ve Takvim (Google OAuth Client ID)</label>
+      <input id="googleClientIdInput" type="text" placeholder="123456789-xxxx.apps.googleusercontent.com" />
+
+      <label>3. Bulut Senkronizasyonu (Firebase Config JSON - İsteğe Bağlı)</label>
+      <textarea id="firebaseConfigInput" style="min-height:110px; font-size:15px;" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'></textarea>
+
+      <div class="row">
+        <button class="btn" onclick="saveApiSettings()">Ayarları Kaydet</button>
+        <button class="btn btn-outline" onclick="exportBackup()">Verileri Yedekle (JSON)</button>
+      </div>
+      <div id="settingsSavedMsg" class="muted" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ALARM ÇALMA MODALI -->
+  <div id="alarmRingModal" class="modal-backdrop hidden">
+    <div class="modal" style="text-align:center;">
+      <h2 id="ringTitle">Alarm</h2>
+      <p id="ringTime" class="muted"></p>
+      <button class="btn" onclick="stopAlarmSound()" style="width:100%;">Alarmı Durdur</button>
+    </div>
+  </div>
+
+<script>
+  const STORAGE_KEY = 'asistanim_live_v1';
+  const defaultState = {
+    tasks: [
+      { id: 't1', title: 'Tedarikçi sözleşme revizyonunu incele', status: 'todo', owner: 'Hukuk', createdAt: Date.now() - 86400000 },
+      { id: 't2', title: 'Q4 bütçe sunumunu tamamla', status: 'doing', owner: 'Finans', createdAt: Date.now() - 172800000 },
+      { id: 't3', title: 'Ahmet Beyden güncel fiyat teklifi bekleniyor', status: 'waiting', owner: 'Ahmet Yılmaz', createdAt: Date.now() - 4 * 86400000 },
+      { id: 't4', title: 'Haftalık ekip toplantısı planlandı', status: 'done', owner: 'Ekip', createdAt: Date.now() - 2 * 86400000 }
+    ],
+    notes: [
+      {
+        id: 'n1',
+        title: 'Müşteri Proje Başlangıç Toplantısı',
+        body: 'Teslim tarihi 15 Aralık olarak netleşti.\n- Teknik şartnameyi e-posta ile gönder\n- Tasarım onayı için Cuma günü ara',
+        createdAtStr: '21 Kasım 2026, 14:30',
+        audioDataUrl: null
+      }
+    ],
+    mails: [
+      { id: 'm1', from: 'Selin Kaya <selin@firma.com>', to: 'ben@sirketim.com', cc: '', subject: 'Onay Bekleyen Teklif Revizyonu', snippet: 'Merhaba, güncel revizyonu ekte iletiyorum. Bugün 16:00 öncesi onayınızı rica ederim.', date: 'Bugün 10:15', isDirect: true, unread: true },
+      { id: 'm2', from: 'Murat Demir <murat@tedarik.com>', to: 'ben@sirketim.com', cc: 'satinalma@sirketim.com', subject: 'Sevkiyat Takvimi Güncellemesi', snippet: 'Yeni parti ürünlerin teslimatı Çarşamba sabahı saat 09:00 olarak planlandı.', date: 'Bugün 09:40', isDirect: true, unread: true },
+      { id: 'm3', from: 'İK Departmanı <ik@sirketim.com>', to: 'tum-ekip@sirketim.com', cc: 'ben@sirketim.com', subject: 'Yıllık İzin Planlaması Hatırlatması', snippet: 'Bilginize: Yıl sonu izin taleplerinin ay sonuna kadar sisteme girilmesi gerekmektedir.', date: 'Dün 17:20', isDirect: false, unread: false },
+      { id: 'm4', from: 'Finans <finans@sirketim.com>', to: 'mudurler@sirketim.com', cc: 'ben@sirketim.com', subject: 'Aylık Masraf Raporu Bilgi', snippet: 'Bilgi amaçlı paylaşılmıştır. Kasım ayı masraf kesim tarihi 28 Kasım.', date: 'Dün 14:05', isDirect: false, unread: false }
+    ],
+    alarms: [
+      { id: 'a1', title: 'Günlük iş planını gözden geçir', time: '09:00', repeat: 'weekdays', active: true }
+    ],
+    theme: { mode: 'auto', dayStart: '07:00', nightStart: '19:00' },
+    prefs: { gmailDirectOnly: true },
+    api: { geminiKey: '', googleClientId: '', firebaseConfig: '' }
+  };
+
+  let state = loadState();
+  let currentTaskFilter = 'all';
+  let currentMailFilter = 'direct';
+  let recognition = null;
+  let isDictating = false;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let draftAudioDataUrl = null;
+  let audioCtx = null;
+  let alarmOsc = null;
+  let lastTriggeredMinute = '';
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(defaultState);
+      const parsed = JSON.parse(raw);
+      return {
+        ...structuredClone(defaultState),
+        ...parsed,
+        theme: { ...defaultState.theme, ...(parsed.theme || {}) },
+        prefs: { ...defaultState.prefs, ...(parsed.prefs || {}) },
+        api: { ...defaultState.api, ...(parsed.api || {}) }
+      };
+    } catch { return structuredClone(defaultState); }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function formatNowTr() {
+    return new Intl.DateTimeFormat('tr-TR', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }).format(new Date());
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('tab-' + tabId).classList.remove('hidden');
+    document.querySelectorAll('#mainNav button').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tabId);
+    });
+    renderAll();
+  }
+
+  function openModal(id) {
+    if (id === 'themeModal') {
+      document.getElementById('themeModeSelect').value = state.theme.mode;
+      document.getElementById('dayStartInput').value = state.theme.dayStart;
+      document.getElementById('nightStartInput').value = state.theme.nightStart;
+    }
+    if (id === 'settingsModal') {
+      document.getElementById('geminiKeyInput').value = state.api.geminiKey || '';
+      document.getElementById('googleClientIdInput').value = state.api.googleClientId || '';
+      document.getElementById('firebaseConfigInput').value = state.api.firebaseConfig || '';
+      document.getElementById('settingsSavedMsg').textContent = '';
+    }
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+  }
+
+  function applyTheme() {
+    const now = new Date();
+    const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clockBadge').textContent = hhmm;
+
+    let isDark = false;
+    let label = 'Tema: ';
+    if (state.theme.mode === 'dark') { isDark = true; label += 'Gece'; }
+    else if (state.theme.mode === 'light') { isDark = false; label += 'Gündüz'; }
+    else {
+      isDark = !(hhmm >= state.theme.dayStart && hhmm < state.theme.nightStart);
+      label += 'Otomatik (' + (isDark ? 'Gece' : 'Gündüz') + ')';
+    }
+    document.body.classList.toggle('dark', isDark);
+    document.getElementById('themeBtn').textContent = label;
+  }
+
+  function saveThemeSettings() {
+    state.theme.mode = document.getElementById('themeModeSelect').value;
+    state.theme.dayStart = document.getElementById('dayStartInput').value || '07:00';
+    state.theme.nightStart = document.getElementById('nightStartInput').value || '19:00';
+    saveState();
+    applyTheme();
+  }
+
+  function saveApiSettings() {
+    state.api.geminiKey = document.getElementById('geminiKeyInput').value.trim();
+    state.api.googleClientId = document.getElementById('googleClientIdInput').value.trim();
+    state.api.firebaseConfig = document.getElementById('firebaseConfigInput').value.trim();
+    saveState();
+    document.getElementById('settingsSavedMsg').textContent = 'Ayarlar kaydedildi.';
+  }
+
+  function savePrefs() {
+    state.prefs.gmailDirectOnly = document.getElementById('gmailDirectOnly').checked;
+    saveState();
+  }
+
+  function exportBackup() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'asistanim-yedek.json';
+    a.click();
+  }
+
+  // --- BUGÜN & YAPAY ZEKA ---
+  function renderToday() {
+    const activeTasks = state.tasks.filter(t => t.status !== 'done');
+    const staleWaiting = state.tasks.filter(t => t.status === 'waiting' && (Date.now() - t.createdAt) >= 3 * 86400000);
+    const directUnread = state.mails.filter(m => m.isDirect && m.unread);
+    const activeAlarms = state.alarms.filter(a => a.active);
+
+    document.getElementById('todayStats').innerHTML = `
+      <div class="stat-box"><div class="stat-val">${activeTasks.length}</div><div class="stat-lbl">Aktif İş Görevi</div></div>
+      <div class="stat-box"><div class="stat-val">${staleWaiting.length}</div><div class="stat-lbl">3+ Gün Bekleyen</div></div>
+      <div class="stat-box"><div class="stat-val">${directUnread.length}</div><div class="stat-lbl">Doğrudan İş Maili</div></div>
+      <div class="stat-box"><div class="stat-val">${activeAlarms.length}</div><div class="stat-lbl">Aktif Alarm</div></div>
+    `;
+
+    const total = state.tasks.length || 1;
+    const doneCount = state.tasks.filter(t => t.status === 'done').length;
+    const pct = Math.round((doneCount / total) * 100);
+    document.getElementById('weeklySummary').innerHTML = `
+      <p style="margin:0 0 6px;">Toplam <strong>${state.tasks.length}</strong> iş görevinden <strong>${doneCount}</strong> tanesi tamamlandı (<strong>%${pct}</strong>).</p>
+      <p class="muted" style="margin:0;">Haber bekleyen iş sayısı: ${state.tasks.filter(t=>t.status==='waiting').length} | Kayıtlı not sayısı: ${state.notes.length}</p>
+    `;
+  }
+
+  async function callGemini(promptText) {
+    const key = state.api.geminiKey;
+    if (!key) return null;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+    });
+    if (!res.ok) throw new Error('Gemini API yanıt vermedi (' + res.status + ')');
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Yanıt alınamadı.';
+  }
+
+  async function runDailyAnalysis() {
+    const out = document.getElementById('dailyAnalysisOutput');
+    out.classList.remove('hidden');
+    out.textContent = 'Günlük iş verilerin analiz ediliyor...';
+
+    const directMails = state.mails.filter(m => m.isDirect);
+    const activeTasks = state.tasks.filter(t => t.status !== 'done');
+    const stale = state.tasks.filter(t => t.status === 'waiting' && (Date.now() - t.createdAt) >= 3 * 86400000);
+
+    if (state.api.geminiKey) {
+      try {
+        const prompt = `Sen kullanıcının profesyonel Türkçe iş asistanısın. Emojisiz, sade, net ve maddeler halinde günlük öncelik brifingi hazırla.
+Aktif görevler: ${JSON.stringify(activeTasks.map(t => ({ baslik: t.title, durum: t.status, kisi: t.owner })))}
+3+ gündür bekleyen işler: ${JSON.stringify(stale.map(t => t.title))}
+Doğrudan gelen iş mailleri (CC hariç): ${JSON.stringify(directMails.map(m => ({ kimden: m.from, konu: m.subject, ozet: m.snippet })))}
+Alarmlar: ${JSON.stringify(state.alarms.filter(a=>a.active).map(a => a.time + ' ' + a.title))}
+En kritik 3 aksiyonu sırayla yaz.`;
+        const reply = await callGemini(prompt);
+        out.textContent = reply;
+        return;
+      } catch (e) {
+        out.textContent = 'Canlı yapay zeka bağlantısında hata oluştu: ' + e.message + '\n\nYerel özet:\n' + buildLocalBriefing(activeTasks, stale, directMails);
+        return;
+      }
+    }
+    out.textContent = buildLocalBriefing(activeTasks, stale, directMails) + '\n\nNot: Canlı yapay zeka analizi için Ayarlar bölümünden ücretsiz Gemini API anahtarını ekleyebilirsin.';
+  }
+
+  function buildLocalBriefing(activeTasks, stale, directMails) {
+    let lines = ['Günlük Öncelik Sırası:'];
+    if (stale.length) lines.push('1. Takip Gereken Bekleyen İşler: ' + stale.map(s => s.title).join(', '));
+    if (directMails.length) lines.push('2. Doğrudan Sana Gelen İş Mailleri (' + directMails.length + ' adet): İlk olarak "' + directMails[0].subject + '" konusuna bak.');
+    if (activeTasks.length) lines.push('3. Aktif Görevler: "' + activeTasks[0].title + '" işiyle başlaman önerilir.');
+    return lines.join('\n');
+  }
+
+  // --- GÖREVLER ---
+  const statusOrder = ['todo', 'doing', 'waiting', 'done'];
+  const statusLabels = { todo: 'Yapılacak', doing: 'İşlemde', waiting: 'Haber Bekliyor', done: 'Tamamlandı' };
+
+  function addTask() {
+    const title = document.getElementById('taskTitle').value.trim();
+    if (!title) return;
+    state.tasks.unshift({
+      id: 't' + Date.now(),
+      title,
+      status: document.getElementById('taskStatus').value,
+      owner: document.getElementById('taskOwner').value.trim(),
+      createdAt: Date.now()
+    });
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskOwner').value = '';
+    saveState();
+    renderAll();
+  }
+
+  function setTaskFilter(f, btn) {
+    currentTaskFilter = f;
+    document.querySelectorAll('#taskFilterBar button').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderTasks();
+  }
+
+  function moveTask(id, dir) {
+    const t = state.tasks.find(x => x.id === id);
+    if (!t) return;
+    const idx = statusOrder.indexOf(t.status) + dir;
+    if (idx >= 0 && idx < statusOrder.length) {
+      t.status = statusOrder[idx];
+      saveState();
+      renderAll();
+    }
+  }
+
+  function deleteTask(id) {
+    state.tasks = state.tasks.filter(x => x.id !== id);
+    saveState();
+    renderAll();
+  }
+
+  function renderTasks() {
+    const list = state.tasks.filter(t => currentTaskFilter === 'all' || t.status === currentTaskFilter);
+    const el = document.getElementById('taskList');
+    if (!list.length) { el.innerHTML = '<div class="card muted">Bu görünümde görev bulunmuyor.</div>'; return; }
+    el.innerHTML = list.map(t => {
+      const days = Math.floor((Date.now() - t.createdAt) / 86400000);
+      const staleTag = (t.status === 'waiting' && days >= 3) ? `<span class="tag tag-danger">${days} gündür bekliyor</span>` : '';
+      return `
+        <div class="card">
+          <div class="row-between" style="margin-bottom:8px;">
+            <span class="tag">${statusLabels[t.status]}</span>
+            ${staleTag}
+          </div>
+          <div style="font-size:20px; font-weight:700; margin-bottom:6px;">${escapeHtml(t.title)}</div>
+          ${t.owner ? `<div class="muted" style="margin-bottom:10px;">İlgili: ${escapeHtml(t.owner)}</div>` : ''}
+          <div class="row">
+            <button class="btn btn-outline btn-sm" onclick="moveTask('${t.id}', -1)" ${t.status==='todo'?'disabled':''}>Önceki</button>
+            <button class="btn btn-outline btn-sm" onclick="moveTask('${t.id}', 1)" ${t.status==='done'?'disabled':''}>Sonraki</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')">Sil</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // --- NOTLAR & SES ---
+  function toggleDictation() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const statusEl = document.getElementById('voiceStatus');
+    const btn = document.getElementById('dictateBtn');
+    if (!SpeechRec) { statusEl.textContent = 'Bu tarayıcı sesle yazdırmayı desteklemiyor.'; return; }
+
+    if (isDictating && recognition) {
+      recognition.stop();
+      return;
+    }
+    recognition = new SpeechRec();
+    recognition.lang = 'tr-TR';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onstart = () => { isDictating = true; btn.textContent = 'Yazdırmayı Durdur'; statusEl.textContent = 'Dinleniyor...'; };
+    recognition.onresult = (e) => {
+      const ta = document.getElementById('noteBody');
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          ta.value += (ta.value && !ta.value.endsWith(' ') ? ' ' : '') + e.results[i][0].transcript.trim();
+        }
+      }
+    };
+    recognition.onerror = (e) => { statusEl.textContent = 'Mikrofon hatası: ' + e.error; };
+    recognition.onend = () => { isDictating = false; btn.textContent = 'Sesle Yazdır'; statusEl.textContent = ''; };
+    recognition.start();
+  }
+
+  async function toggleAudioRecord() {
+    const btn = document.getElementById('recordBtn');
+    const statusEl = document.getElementById('voiceStatus');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          draftAudioDataUrl = reader.result;
+          document.getElementById('draftAudioPlayer').src = draftAudioDataUrl;
+          document.getElementById('draftAudioWrap').classList.remove('hidden');
+        };
+        reader.readAsDataURL(blob);
+        btn.textContent = 'Ses Kaydet';
+        statusEl.textContent = 'Ses kaydı eklendi.';
+      };
+      mediaRecorder.start();
+      btn.textContent = 'Kaydı Bitir';
+      statusEl.textContent = 'Ses kaydediliyor...';
+    } catch {
+      statusEl.textContent = 'Mikrofon izni verilmedi.';
+    }
+  }
+
+  function clearDraftAudio() {
+    draftAudioDataUrl = null;
+    document.getElementById('draftAudioWrap').classList.add('hidden');
+    document.getElementById('draftAudioPlayer').src = '';
+  }
+
+  function saveNote() {
+    const title = document.getElementById('noteTitle').value.trim() || 'Başlıksız İş Notu';
+    const body = document.getElementById('noteBody').value.trim();
+    if (!body && !draftAudioDataUrl) return;
+    state.notes.unshift({
+      id: 'n' + Date.now(),
+      title,
+      body,
+      createdAtStr: formatNowTr(),
+      audioDataUrl: draftAudioDataUrl
+    });
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteBody').value = '';
+    clearDraftAudio();
+    saveState();
+    renderAll();
+  }
+
+  function addActionToTasks(text) {
+    state.tasks.unshift({ id: 't' + Date.now(), title: text, status: 'todo', owner: 'Not Aksiyonu', createdAt: Date.now() });
+    saveState();
+    renderAll();
+    alert('Görevler listesine eklendi: ' + text);
+  }
+
+  function deleteNote(id) {
+    state.notes = state.notes.filter(n => n.id !== id);
+    saveState();
+    renderAll();
+  }
+
+  function renderNotes() {
+    const el = document.getElementById('notesList');
+    if (!state.notes.length) { el.innerHTML = '<div class="card muted">Henüz kayıtlı not yok.</div>'; return; }
+    el.innerHTML = state.notes.map(n => {
+      const actions = (n.body || '').split('\n').map(l => l.trim()).filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
+      return `
+        <div class="card">
+          <div class="row-between">
+            <h3 style="margin:0;">${escapeHtml(n.title)}</h3>
+            <span class="muted">${escapeHtml(n.createdAtStr)}</span>
+          </div>
+          ${n.body ? `<p style="white-space:pre-wrap; margin:10px 0;">${escapeHtml(n.body)}</p>` : ''}
+          ${n.audioDataUrl ? `<audio controls src="${n.audioDataUrl}"></audio>` : ''}
+          ${actions.map(a => `
+            <div class="action-item">
+              <span>${escapeHtml(a)}</span>
+              <button class="btn btn-outline btn-sm" onclick="addActionToTasks(${JSON.stringify(a).replace(/"/g, '&quot;')})">Göreve Aktar</button>
+            </div>
+          `).join('')}
+          <div style="margin-top:10px;">
+            <button class="btn btn-danger btn-sm" onclick="deleteNote('${n.id}')">Notu Sil</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // --- İŞ MAİLİ (DOĞRUDAN BANA / CC) ---
+  function setMailFilter(f) {
+    currentMailFilter = f;
+    renderMails();
+  }
+
+  function renderMails() {
+    document.getElementById('gmailDirectOnly').checked = !!state.prefs.gmailDirectOnly;
+    const directCount = state.mails.filter(m => m.isDirect).length;
+    const ccCount = state.mails.filter(m => !m.isDirect).length;
+    const allCount = state.mails.length;
+
+    document.querySelectorAll('#mailFilterBar button').forEach(b => {
+      const mf = b.dataset.mfilter;
+      b.classList.toggle('active', mf === currentMailFilter);
+      if (mf === 'direct') b.textContent = `Doğrudan Bana (${directCount})`;
+      if (mf === 'cc') b.textContent = `Sadece CC (${ccCount})`;
+      if (mf === 'all') b.textContent = `Tümü (${allCount})`;
+    });
+
+    const filtered = state.mails.filter(m => {
+      if (currentMailFilter === 'direct') return m.isDirect;
+      if (currentMailFilter === 'cc') return !m.isDirect;
+      return true;
+    });
+
+    const el = document.getElementById('mailList');
+    if (!filtered.length) { el.innerHTML = '<div class="card muted">Bu filtrede e-posta bulunmuyor.</div>'; return; }
+
+    el.innerHTML = filtered.map(m => `
+      <div class="card">
+        <div class="row-between" style="margin-bottom:6px;">
+          <span class="tag ${m.isDirect ? 'tag-ok' : ''}">${m.isDirect ? 'Doğrudan (Kime)' : 'Bilgi (CC)'}</span>
+          <span class="muted">${escapeHtml(m.date)}</span>
+        </div>
+        <div style="font-size:20px; font-weight:700; margin-bottom:4px;">${escapeHtml(m.subject)}</div>
+        <div class="muted" style="margin-bottom:8px;">Kimden: ${escapeHtml(m.from)}</div>
+        <p style="margin:0 0 12px;">${escapeHtml(m.snippet)}</p>
+        <div class="row">
+          <button class="btn btn-sm" onclick="summarizeMail('${m.id}')">Asistanla Özetle ve Yanıt Öner</button>
+          <button class="btn btn-outline btn-sm" onclick="mailToTask('${m.id}')">Göreve Dönüştür</button>
+        </div>
+        <div id="mail-ai-${m.id}" class="ai-box hidden"></div>
+      </div>
+    `).join('');
+  }
+
+  async function summarizeMail(id) {
+    const m = state.mails.find(x => x.id === id);
+    if (!m) return;
+    const box = document.getElementById('mail-ai-' + id);
+    box.classList.remove('hidden');
+    box.textContent = 'E-posta inceleniyor...';
+    if (state.api.geminiKey) {
+      try {
+        const reply = await callGemini(`Aşağıdaki iş e-postasını 2 cümleyle özetle ve altına kurumsal, kısa bir Türkçe yanıt taslağı yaz (emojisiz):\nKimden: ${m.from}\nKonu: ${m.subject}\nİçerik: ${m.snippet}`);
+        box.textContent = reply;
+        return;
+      } catch (e) {
+        box.textContent = 'Canlı API hatası: ' + e.message;
+        return;
+      }
+    }
+    box.textContent = `Özet: ${m.from} tarafından "${m.subject}" konulu e-posta iletildi.\n\nÖnerilen Yanıt Taslağı:\nMerhaba,\nİlettiğiniz bilgilendirme için teşekkür ederim. Konuyu inceleyip en kısa sürede dönüş yapacağım.\nİyi çalışmalar.`;
+  }
+
+  function mailToTask(id) {
+    const m = state.mails.find(x => x.id === id);
+    if (!m) return;
+    state.tasks.unshift({ id: 't' + Date.now(), title: 'Mail: ' + m.subject, status: 'todo', owner: m.from.split('<')[0].trim(), createdAt: Date.now() });
+    saveState();
+    renderAll();
+    alert('E-posta görev listesine eklendi.');
+  }
+
+  function connectGmail() {
+    const clientId = state.api.googleClientId;
+    if (!clientId) {
+      openModal('settingsModal');
+      return;
+    }
+    if (!window.google || !google.accounts || !google.accounts.oauth2) {
+      alert('Google kimlik servisi henüz yüklenmedi, birkaç saniye sonra tekrar dene.');
+      return;
+    }
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly',
+      callback: async (resp) => {
+        if (resp.error) { alert('Google bağlantı hatası: ' + resp.error); return; }
+        await fetchLiveGmail(resp.access_token);
+        await fetchLiveCalendar(resp.access_token);
+      }
+    });
+    tokenClient.requestAccessToken();
+  }
+
+  async function fetchLiveGmail(token) {
+    const statusEl = document.getElementById('gmailStatusText');
+    statusEl.textContent = 'İş Gmail hesabı senkronize ediliyor...';
+    const headers = { Authorization: 'Bearer ' + token };
+    const profRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', { headers });
+    const prof = await profRes.json();
+    const myEmail = (prof.emailAddress || '').toLowerCase();
+
+    const q = state.prefs.gmailDirectOnly ? 'in:inbox to:me' : 'in:inbox';
+    const listRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=12&q=${encodeURIComponent(q)}`, { headers });
+    const listData = await listRes.json();
+    const msgs = listData.messages || [];
+
+    const loaded = [];
+    for (const item of msgs) {
+      const mRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Subject&metadataHeaders=Date`, { headers });
+      const mData = await mRes.json();
+      const hdrs = mData.payload?.headers || [];
+      const getH = (name) => (hdrs.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '');
+      const toVal = getH('To').toLowerCase();
+      const ccVal = getH('Cc').toLowerCase();
+      const isDirect = myEmail ? toVal.includes(myEmail) : !ccVal.includes(myEmail);
+      loaded.push({
+        id: mData.id,
+        from: getH('From'),
+        to: getH('To'),
+        cc: getH('Cc'),
+        subject: getH('Subject') || '(Konusuz)',
+        snippet: mData.snippet || '',
+        date: getH('Date').slice(0, 16),
+        isDirect,
+        unread: (mData.labelIds || []).includes('UNREAD')
+      });
+    }
+    state.mails = loaded;
+    saveState();
+    statusEl.textContent = 'Bağlı hesap: ' + myEmail + ' (' + loaded.length + ' e-posta çekildi)';
+    renderAll();
+  }
+
+  async function fetchLiveCalendar(token) {
+    const headers = { Authorization: 'Bearer ' + token };
+    const nowIso = new Date().toISOString();
+    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(nowIso)}&maxResults=5&singleEvents=true&orderBy=startTime`, { headers });
+    const data = await res.json();
+    const items = data.items || [];
+    const sec = document.getElementById('calendarSection');
+    const list = document.getElementById('calendarList');
+    if (!items.length) { sec.classList.add('hidden'); return; }
+    sec.classList.remove('hidden');
+    list.innerHTML = items.map(ev => {
+      const start = ev.start?.dateTime || ev.start?.date || '';
+      return `<div class="action-item"><strong>${escapeHtml(ev.summary || 'Toplantı')}</strong><span class="muted">${escapeHtml(start.slice(0,16).replace('T',' '))}</span></div>`;
+    }).join('');
+  }
+
+  // --- ALARMLAR ---
+  function addAlarm() {
+    const title = document.getElementById('alarmTitle').value.trim();
+    const time = document.getElementById('alarmTime').value;
+    if (!title || !time) return;
+    state.alarms.unshift({
+      id: 'a' + Date.now(),
+      title, time,
+      repeat: document.getElementById('alarmRepeat').value,
+      active: true
+    });
+    document.getElementById('alarmTitle').value = '';
+    saveState();
+    renderAll();
+  }
+
+  function toggleAlarm(id) {
+    const a = state.alarms.find(x => x.id === id);
+    if (a) { a.active = !a.active; saveState(); renderAll(); }
+  }
+
+  function deleteAlarm(id) {
+    state.alarms = state.alarms.filter(x => x.id !== id);
+    saveState();
+    renderAll();
+  }
+
+  function renderAlarms() {
+    const repMap = { once: 'Tek Seferlik', daily: 'Her Gün', weekdays: 'Hafta İçi', weekly: 'Haftalık' };
+    const el = document.getElementById('alarmsList');
+    if (!state.alarms.length) { el.innerHTML = '<div class="card muted">Kayıtlı alarm yok.</div>'; return; }
+    el.innerHTML = state.alarms.map(a => `
+      <div class="card row-between">
+        <div>
+          <div style="font-size:24px; font-weight:800;">${escapeHtml(a.time)}</div>
+          <div style="font-weight:700;">${escapeHtml(a.title)}</div>
+          <div class="muted">${repMap[a.repeat] || a.repeat}</div>
+        </div>
+        <div class="row">
+          <button class="btn btn-outline btn-sm" onclick="toggleAlarm('${a.id}')">${a.active ? 'Aktif' : 'Kapalı'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAlarm('${a.id}')">Sil</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function playAlarmSound(title, timeStr) {
+    document.getElementById('ringTitle').textContent = title;
+    document.getElementById('ringTime').textContent = timeStr;
+    document.getElementById('alarmRingModal').classList.remove('hidden');
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      alarmOsc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      alarmOsc.type = 'sine';
+      alarmOsc.frequency.value = 880;
+      gain.gain.value = 0.2;
+      alarmOsc.connect(gain);
+      gain.connect(audioCtx.destination);
+      alarmOsc.start();
+    } catch {}
+  }
+
+  function stopAlarmSound() {
+    document.getElementById('alarmRingModal').classList.add('hidden');
+    try { if (alarmOsc) alarmOsc.stop(); if (audioCtx) audioCtx.close(); } catch {}
+    alarmOsc = null; audioCtx = null;
+  }
+
+  function triggerTestAlarm() {
+    setTimeout(() => playAlarmSound('Test İş Hatırlatıcısı', 'Şimdi'), 3000);
+  }
+
+  function checkAlarms() {
+    const now = new Date();
+    const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    if (hhmm === lastTriggeredMinute) return;
+    const match = state.alarms.find(a => a.active && a.time === hhmm);
+    if (match) {
+      lastTriggeredMinute = hhmm;
+      playAlarmSound(match.title, hhmm);
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderAll() {
+    renderToday();
+    renderTasks();
+    renderNotes();
+    renderMails();
+    renderAlarms();
+  }
+
+  applyTheme();
+  renderAll();
+  setInterval(() => { applyTheme(); checkAlarms(); }, 10000);
+</script>
+</body>
+</html>
