@@ -366,7 +366,7 @@
   <div id="settingsModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal('settingsModal')">
     <div class="modal">
       <div class="row-between">
-        <h3>Ayarlar ve Canlı Bağlantılar</h3>
+        <h3>Ayarlar ve Canlı Bağlantılar (v3)</h3>
         <button class="btn btn-outline btn-sm" onclick="closeModal('settingsModal')">Kapat</button>
       </div>
       <p class="muted">Tüm anahtarlar yalnızca senin cihazında saklanır.</p>
@@ -426,6 +426,7 @@
     ],
     theme: { mode: 'auto', dayStart: '07:00', nightStart: '19:00' },
     prefs: { gmailDirectOnly: true },
+    dismissedMailIds: [],
     api: { geminiKey: '', googleClientId: '', firebaseConfig: '' }
   };
 
@@ -449,6 +450,7 @@
       return {
         ...structuredClone(defaultState),
         ...parsed,
+        dismissedMailIds: Array.isArray(parsed.dismissedMailIds) ? parsed.dismissedMailIds : [],
         theme: { ...defaultState.theme, ...(parsed.theme || {}) },
         prefs: { ...defaultState.prefs, ...(parsed.prefs || {}) },
         api: { ...defaultState.api, ...(parsed.api || {}) }
@@ -563,18 +565,62 @@
     `;
   }
 
-  async function callGemini(promptText) {
-    const key = state.api.geminiKey;
-    if (!key) return null;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-    });
-    if (!res.ok) throw new Error('Gemini API yanıt vermedi (' + res.status + ')');
+  let cachedWorkingModel = null;
+
+  async function findWorkingModel(key) {
+    if (cachedWorkingModel) return cachedWorkingModel;
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+    if (!res.ok) return null;
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Yanıt alınamadı.';
+    const list = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'));
+    const preferred = list.find(m => m.name.includes('flash')) || list[0];
+    if (preferred) {
+      cachedWorkingModel = preferred.name.replace(/^models\//, '');
+      return cachedWorkingModel;
+    }
+    return null;
+  }
+
+  async function callGemini(promptText) {
+    const key = (state.api.geminiKey || '').replace(/\s+/g, '');
+    if (!key) return null;
+    const candidates = cachedWorkingModel
+      ? [cachedWorkingModel]
+      : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+    let lastErr = '';
+    for (const model of candidates) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        cachedWorkingModel = model;
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Yanıt alınamadı.';
+      }
+      lastErr = `${res.status} - ${data?.error?.message || 'Bilinmeyen hata'}`;
+      if (res.status !== 404) throw new Error(lastErr);
+    }
+
+    // Auto-discover available model for this API key
+    const discovered = await findWorkingModel(key);
+    if (discovered) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${discovered}:generateContent?key=${encodeURIComponent(key)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Yanıt alınamadı.';
+      }
+      lastErr = `${res.status} - ${data?.error?.message || 'Bilinmeyen hata'}`;
+    }
+    throw new Error(lastErr || 'Uygun Gemini modeli bulunamadı.');
   }
 
   async function runDailyAnalysis() {
@@ -845,10 +891,11 @@ En kritik 3 aksiyonu sırayla yaz.`;
         </div>
         <div style="font-size:20px; font-weight:700; margin-bottom:4px;">${escapeHtml(m.subject)}</div>
         <div class="muted" style="margin-bottom:8px;">Kimden: ${escapeHtml(m.from)}</div>
-        <p style="margin:0 0 12px;">${escapeHtml(m.snippet)}</p>
+        <p style="margin:0 0 12px;">${escapeHtml(decodeHtmlEntities(m.snippet))}</p>
         <div class="row">
           <button class="btn btn-sm" onclick="summarizeMail('${m.id}')">Asistanla Özetle ve Yanıt Öner</button>
           <button class="btn btn-outline btn-sm" onclick="mailToTask('${m.id}')">Göreve Dönüştür</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMail('${m.id}')">Sil</button>
         </div>
         <div id="mail-ai-${m.id}" class="ai-box hidden"></div>
       </div>
@@ -881,6 +928,14 @@ En kritik 3 aksiyonu sırayla yaz.`;
     saveState();
     renderAll();
     alert('E-posta görev listesine eklendi.');
+  }
+
+  function deleteMail(id) {
+    state.mails = state.mails.filter(m => m.id !== id);
+    if (!Array.isArray(state.dismissedMailIds)) state.dismissedMailIds = [];
+    if (!state.dismissedMailIds.includes(id)) state.dismissedMailIds.push(id);
+    saveState();
+    renderAll();
   }
 
   function connectGmail() {
@@ -918,8 +973,10 @@ En kritik 3 aksiyonu sırayla yaz.`;
     const listData = await listRes.json();
     const msgs = listData.messages || [];
 
+    const dismissed = new Set(state.dismissedMailIds || []);
     const loaded = [];
     for (const item of msgs) {
+      if (dismissed.has(item.id)) continue;
       const mRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Subject&metadataHeaders=Date`, { headers });
       const mData = await mRes.json();
       const hdrs = mData.payload?.headers || [];
@@ -933,7 +990,7 @@ En kritik 3 aksiyonu sırayla yaz.`;
         to: getH('To'),
         cc: getH('Cc'),
         subject: getH('Subject') || '(Konusuz)',
-        snippet: mData.snippet || '',
+        snippet: decodeHtmlEntities(mData.snippet || ''),
         date: getH('Date').slice(0, 16),
         isDirect,
         unread: (mData.labelIds || []).includes('UNREAD')
@@ -1043,6 +1100,12 @@ En kritik 3 aksiyonu sırayla yaz.`;
       lastTriggeredMinute = hhmm;
       playAlarmSound(match.title, hhmm);
     }
+  }
+
+  function decodeHtmlEntities(str) {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = String(str || '');
+    return txt.value;
   }
 
   function escapeHtml(str) {
